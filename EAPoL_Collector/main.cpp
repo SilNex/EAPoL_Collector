@@ -15,18 +15,15 @@ class APs_{
     struct STs_ station_;
 };
 
-static vector<RadioTap> vradioTap;
+static vector<RadioTap> vpkt;
 static PacketWriter write("./test.pcap", PacketWriter::RADIOTAP);
 bool eapSniffer(PDU &pdu){
-    const RadioTap &radioTap = pdu.rfind_pdu<RadioTap>();
+    RadioTap &pkt = pdu.rfind_pdu<RadioTap>();
 
-    RSNEAPOL rsneapol = radioTap.rfind_pdu<RSNEAPOL>();
-    cout << (int)rsneapol.packet_type()<< endl;
-    RadioTap pkt = RadioTap() / Dot11Data() / SNAP() / rsneapol;
-
-    vradioTap.push_back(pkt);
-    write.write(vradioTap.begin(), vradioTap.end());
-
+    //if(pkt.rfind_pdu<RSNEAPOL>().length()){ >> cannot capture EAPoL 4th
+    RadioTap radio = RadioTap() / pkt.rfind_pdu<Dot11Data>() / pkt.rfind_pdu<SNAP>() / pkt.rfind_pdu<RSNEAPOL>();
+    vpkt.push_back(radio);
+    write.write(vpkt.begin(), vpkt.end());
     return true;
 }
 
