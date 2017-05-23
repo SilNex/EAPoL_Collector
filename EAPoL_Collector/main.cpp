@@ -21,6 +21,9 @@ bool eapSniffer(PDU &pdu){
     RadioTap &pkt = pdu.rfind_pdu<RadioTap>();
 
     //if(pkt.rfind_pdu<RSNEAPOL>().length()){ >> cannot capture EAPoL 4th
+    if(pkt.rfind_pdu<RSNEAPOL>().length()){
+        cout << "Collected EAPoL pakcet!" << endl;
+    }
     RadioTap radio = RadioTap() / pkt.rfind_pdu<Dot11Data>() / pkt.rfind_pdu<SNAP>() / pkt.rfind_pdu<RSNEAPOL>();
     vpkt.push_back(radio);
     write.write(vpkt.begin(), vpkt.end());
