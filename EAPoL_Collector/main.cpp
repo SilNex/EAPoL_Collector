@@ -80,15 +80,20 @@ int main(int argc, char *argv[]){
 void Packetwrite(PDU* pdu, map<string, AccessPoint>& APs, map<string, PacketWriter>& write_packet){
     try{
         AccessPoint& ap = APs[get_bssid(pdu->rfind_pdu<Dot11Beacon>())];
+        if(write_packet.find( ap.eSSID ) != write_packet.end()){
+            write_packet[ap.eSSID].write(ap.vpkt.begin(), ap.vpkt.end());
+        } else{
+            PacketWriter write(ap.eSSID+".pcap", PacketWriter::RADIOTAP);
+            pair<string, PacketWriter> p(ap.eSSID, write);
+            write_packet.insert(p);
+        }
+
+
         try{
             if(!exists_file(ap.eSSID+".pcap")){
-                static PacketWriter write(ap.eSSID+".pcap", PacketWriter::RADIOTAP);
-                ap.handle_ = write.handle_;
                 cout << "make file" << ap.eSSID << endl;
-                write.write(ap.vpkt.begin(), ap.vpkt.end());
             } else {
-                write.handle_ = ap.handle_;
-                write.write(ap.vpkt.begin(), ap.vpkt.end());
+
             }
         } catch (pcap_error){
             return;
